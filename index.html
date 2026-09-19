@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>掛け算マスター</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="styles.css">
+    <!-- Chart.js for graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Canvas Confetti for effects -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- TOP VIEW -->
+        <div id="view-top" class="view active">
+            <header class="top-header">
+                <div class="user-info-box" id="btn-user-profile">
+                    <span id="top-player-name" class="player-name">--</span>
+                    <div class="streak-badge">
+                        🔥 <span id="top-streak">0</span>日目
+                    </div>
+                </div>
+                <div class="last-play-info">
+                    最終プレイ: <span id="top-last-play">--</span>
+                </div>
+            </header>
+
+            <div class="hero-section">
+                <h1>✖️ 掛け算マスター ➗</h1>
+                <p>楽しく九九や計算をマスターしよう！</p>
+            </div>
+
+            <div class="menu-grid">
+                <button class="menu-btn btn-play" data-target="play-menu">
+                    <span class="icon">🎮</span>
+                    <span>プレイ</span>
+                </button>
+                <button class="menu-btn btn-history" data-target="history-view">
+                    <span class="icon">📊</span>
+                    <span>履歴</span>
+                </button>
+                <button class="menu-btn btn-settings" data-target="settings-view">
+                    <span class="icon">⚙️</span>
+                    <span>設定</span>
+                </button>
+                <button class="menu-btn btn-ranking" data-target="ranking-view">
+                    <span class="icon">🏆</span>
+                    <span>ランキング</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- PLAY MENU VIEW -->
+        <div id="view-play-menu" class="view">
+            <header class="sub-header">
+                <button class="back-btn" data-target="top">◀ 戻る</button>
+                <h2>プレイモード選択</h2>
+            </header>
+            <div class="selection-grid">
+                <button class="select-btn" data-mode="order">順番</button>
+                <button class="select-btn" data-mode="random">ランダム (9問)</button>
+                <button class="select-btn" data-mode="review">復習 (苦手優先9問)</button>
+                <button class="select-btn" data-mode="double">２桁</button>
+                <button class="select-btn" data-mode="endless">間違えるまで</button>
+                <button class="select-btn" data-mode="timeattack">タイムアタック</button>
+            </div>
+        </div>
+
+        <!-- ORDER STAGE SELECT -->
+        <div id="view-order-select" class="view">
+            <header class="sub-header">
+                <button class="back-btn" data-target="play-menu">◀ 戻る</button>
+                <h2>九九の段を選んでね</h2>
+            </header>
+            <div class="dan-grid" id="dan-grid-container">
+                <!-- Dynamically populated 1 to 9 -->
+            </div>
+        </div>
+
+        <!-- GAMEPLAY VIEW -->
+        <div id="view-game" class="view">
+            <header class="game-header">
+                <button class="quit-btn" id="btn-quit-game">やめる</button>
+                <div class="game-stats-bar">
+                    <span>問: <strong id="game-q-num">1</strong>/<span id="game-q-total">9</span></span>
+                    <span>正答率: <strong id="game-accuracy">100</strong>%</span>
+                    <span>⏱ <strong id="game-timer">0</strong>秒</span>
+                </div>
+            </header>
+
+            <div class="game-container">
+                <div id="ta-extra-info" class="hidden">
+                    正解数: <span id="ta-score">0</span> | 誤答数: <span id="ta-errors">0</span>
+                </div>
+                
+                <div class="question-card">
+                    <div id="question-text" class="question-text">3 × 4 = ?</div>
+                </div>
+
+                <div class="input-display" id="input-display">?</div>
+
+                <div class="numpad">
+                    <button class="num-btn" data-num="7">7</button>
+                    <button class="num-btn" data-num="8">8</button>
+                    <button class="num-btn" data-num="9">9</button>
+                    <button class="num-btn" data-num="4">4</button>
+                    <button class="num-btn" data-num="5">5</button>
+                    <button class="num-btn" data-num="6">6</button>
+                    <button class="num-btn" data-num="1">1</button>
+                    <button class="num-btn" data-num="2">2</button>
+                    <button class="num-btn" data-num="3">3</button>
+                    <button class="num-btn" data-num="0">0</button>
+                    <button class="num-btn clear-btn" data-num="clear">C</button>
+                    <button class="num-btn submit-btn" data-num="enter">確定</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- GAME RESULT VIEW -->
+        <div id="view-result" class="view">
+            <div class="result-card">
+                <h2>🎉 お疲れ様でした！ 🎉</h2>
+                <div class="result-stats">
+                    <p>モード: <span id="res-mode">ランダム</span></p>
+                    <p>正解数 / 出題数: <span id="res-score">9 / 9</span></p>
+                    <p>正答率: <span id="res-accuracy">100</span>%</p>
+                    <p>かかった時間: <span id="res-time">15</span>秒</p>
+                    <p id="res-extra-msg" class="highlight-msg"></p>
+                </div>
+                <button class="primary-btn" data-target="top">トップに戻る</button>
+            </div>
+        </div>
+
+        <!-- HISTORY VIEW -->
+        <div id="view-history" class="view">
+            <header class="sub-header">
+                <button class="back-btn" data-target="top">◀ 戻る</button>
+                <h2>プレイ履歴 & データ</h2>
+            </header>
+            
+            <div class="history-container">
+                <div class="summary-cards">
+                    <div class="stat-card">
+                        <h3>総プレイ時間</h3>
+                        <p id="total-play-time">0分</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>総回答数</h3>
+                        <p id="total-ans-count">0問</p>
+                    </div>
+                    <div class="stat-card" id="card-endless-record">
+                        <h3>間違えるまで最高</h3>
+                        <p id="stat-endless-record">0問</p>
+                    </div>
+                </div>
+
+                <!-- Calendar Section -->
+                <div class="calendar-section">
+                    <div class="calendar-header">
+                        <button id="cal-prev">◀</button>
+                        <h3 id="cal-title">202X年X月</h3>
+                        <button id="cal-next">▶</button>
+                    </div>
+                    <div class="calendar-grid" id="calendar-grid"></div>
+                </div>
+
+                <!-- Graphs Section -->
+                <div class="graph-section">
+                    <div class="graph-controls">
+                        <div class="range-switch">
+                            <button class="switch-btn active" data-range="week">1週間</button>
+                            <button class="switch-btn" data-range="month">1ヶ月</button>
+                        </div>
+                        <div class="nav-date">
+                            <button id="graph-prev">◁</button>
+                            <span id="graph-date-range">202X/XX/XX - XX/XX</span>
+                            <button id="graph-next">▷</button>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="historyChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- TA Top 3 Section -->
+                <div class="ta-records-section">
+                    <h3>タイムアタック記録 ベスト3</h3>
+                    <ul id="ta-top3-list" class="record-list"></ul>
+                    <h3>その他のタイムアタック記録</h3>
+                    <ul id="ta-other-list" class="record-list"></ul>
+                </div>
+
+                <!-- Detailed History Log -->
+                <div class="log-section">
+                    <h3>プレイ履歴一覧</h3>
+                    <div id="history-log-list" class="log-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SETTINGS VIEW -->
+        <div id="view-settings" class="view">
+            <header class="sub-header">
+                <button class="back-btn" data-target="top">◀ 戻る</button>
+                <h2>設定</h2>
+            </header>
+            
+            <div class="settings-container">
+                <div class="setting-item">
+                    <label>カレンダーマル付与の必要プレイ回数（1日）</label>
+                    <input type="number" id="set-cal-target" min="1" max="20" value="1">
+                </div>
+
+                <div class="setting-item">
+                    <label>２桁モードの出題数</label>
+                    <input type="number" id="set-double-count" min="1" max="50" value="5">
+                </div>
+
+                <div class="setting-item">
+                    <label>タイムアタック制限秒数</label>
+                    <input type="number" id="set-ta-time" min="10" max="300" value="30">
+                </div>
+
+                <div class="setting-item">
+                    <label>正解した時の効果音</label>
+                    <select id="set-sound">
+                        <option value="bell">ベル音</option>
+                        <option value="pop">ポップ</option>
+                        <option value="none">なし</option>
+                    </select>
+                </div>
+
+                <div class="setting-item">
+                    <label>正解した時のエフェクト</label>
+                    <select id="set-effect">
+                        <option value="confetti">カラフルな紙吹雪</option>
+                        <option value="cracker">ゴールデンクラッカー</option>
+                        <option value="star">輝くスター</option>
+                        <option value="none">なし</option>
+                    </select>
+                </div>
+
+                <div class="setting-item user-manager-section">
+                    <label>プレイヤー管理</label>
+                    <div class="user-row">
+                        <select id="set-user-select"></select>
+                        <button id="btn-switch-user" class="small-btn">切り替え</button>
+                    </div>
+                    <div class="user-row add-user-row">
+                        <input type="text" id="new-user-name" placeholder="新しいプレイヤー名">
+                        <button id="btn-add-user" class="small-btn">追加</button>
+                    </div>
+                </div>
+
+                <div class="setting-item backup-section">
+                    <label>データバックアップ / 復元</label>
+                    <div class="user-row">
+                        <button id="btn-export" class="small-btn">バックアップ (JSON保存)</button>
+                        <label for="import-file" class="small-btn file-label">復元</label>
+                        <input type="file" id="import-file" accept=".json" class="hidden">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RANKING VIEW -->
+        <div id="view-ranking" class="view">
+            <header class="sub-header">
+                <button class="back-btn" data-target="top">◀ 戻る</button>
+                <h2>プレイヤー別ランキング</h2>
+            </header>
+            <div class="ranking-container" id="ranking-container">
+                <!-- Populated via JS -->
+            </div>
+        </div>
+
+        <!-- USER PROFILE / WEAKNESS MATRIX VIEW -->
+        <div id="view-profile" class="view">
+            <header class="sub-header">
+                <button class="back-btn" data-target="top">◀ 戻る</button>
+                <h2><span id="profile-user-name"></span> の九九 苦手チェック</h2>
+            </header>
+            <div class="profile-container">
+                <p class="profile-desc">※各問題の直近10回分の回答から正答率を算出しています。</p>
+                <div id="kuku-matrix-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
