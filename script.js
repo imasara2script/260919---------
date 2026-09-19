@@ -101,11 +101,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 sound: 'bell',
                 effect: 'confetti'
             },
-            // per user data stored separately or keyed
             userData: {
                 'player_1': {
                     history: [],
-                    kukuMatrix: initKukuMatrix(), // "a_b": {correct: 0, total: 0, history: [1,0,...]}
+                    kukuMatrix: initKukuMatrix(),
                     endlessMax: 0
                 }
             }
@@ -350,7 +349,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 streak++;
                 d.setDate(d.getDate() - 1);
             } else {
-                // Check if today hasn't been played yet, check yesterday
                 if (streak === 0 && d.toDateString() === new Date().toDateString()) {
                     d.setDate(d.getDate() - 1);
                     continue;
@@ -402,7 +400,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const uData = getCurrentUserData();
 
         if (mode === 'order') {
-            // subParam is dan (1-9)
             for (let i = 1; i <= 9; i++) {
                 q.push({ a: subParam, b: i, ans: subParam * i });
             }
@@ -413,7 +410,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 q.push({ a, b, ans: a * b });
             }
         } else if (mode === 'review') {
-            // Sort kuku matrix by accuracy ascending
             let entries = [];
             for(let key in uData.kukuMatrix) {
                 let item = uData.kukuMatrix[key];
@@ -431,7 +427,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 let b = entries[i].b;
                 q.push({ a, b, ans: a * b });
             }
-            // Fallback if not enough entries
             while(q.length < 9) {
                 let a = Math.floor(Math.random() * 9) + 1;
                 let b = Math.floor(Math.random() * 9) + 1;
@@ -443,21 +438,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 let isLeftDouble = Math.random() < 0.5;
                 let a, b;
                 if (isLeftDouble) {
-                    a = Math.floor(Math.random() * 90) + 10; // 10-99
-                    b = Math.floor(Math.random() * 9) + 1;   // 1-9
+                    a = Math.floor(Math.random() * 90) + 10;
+                    b = Math.floor(Math.random() * 9) + 1;
                 } else {
-                    a = Math.floor(Math.random() * 9) + 1;   // 1-9
-                    b = Math.floor(Math.random() * 90) + 10; // 10-99
+                    a = Math.floor(Math.random() * 9) + 1;
+                    b = Math.floor(Math.random() * 90) + 10;
                 }
                 q.push({ a, b, ans: a * b });
             }
         } else if (mode === 'endless') {
-            // Endless starts with random kuku
             let a = Math.floor(Math.random() * 9) + 1;
             let b = Math.floor(Math.random() * 9) + 1;
             q.push({ a, b, ans: a * b });
         } else if (mode === 'timeattack') {
-            // Generates continuous random questions for TA
             for (let i = 0; i < 50; i++) {
                 let a = Math.floor(Math.random() * 9) + 1;
                 let b = Math.floor(Math.random() * 9) + 1;
@@ -518,8 +511,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadCurrentQuestion() {
         if (currentGame.mode === 'endless' && currentGame.currentIndex >= currentGame.questions.length) {
-            // Add more questions
-            let includeDouble = currentGame.currentIndex >= 81; // After all kuku
+            let includeDouble = currentGame.currentIndex >= 81;
             let a, b;
             if (includeDouble && Math.random() < 0.5) {
                 let isLeft = Math.random() < 0.5;
@@ -538,7 +530,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (currentGame.mode === 'timeattack' && currentGame.currentIndex >= currentGame.questions.length) {
-            // replenish TA questions if run out
             for (let i = 0; i < 20; i++) {
                 let a = Math.floor(Math.random() * 9) + 1;
                 let b = Math.floor(Math.random() * 9) + 1;
@@ -598,7 +589,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             currentGame.errorCount++;
             if (currentGame.mode === 'endless') {
-                // Game over on endless mistake
                 endGame();
                 return;
             } else if (currentGame.mode === 'timeattack') {
@@ -606,7 +596,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentGame.currentIndex++;
                 loadCurrentQuestion();
             } else {
-                // Wrong in standard modes: flash red or proceed
                 alert(`ざんねん！正解は ${q.ans} でした。`);
                 currentGame.currentIndex++;
                 loadCurrentQuestion();
@@ -615,7 +604,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function recordAnswerToMatrix(q, isCorrect) {
-        // Only record kuku items (1-9 x 1-9) in matrix
         if (q.a <= 9 && q.b <= 9) {
             const uData = getCurrentUserData();
             const key = `${q.a}_${q.b}`;
@@ -632,7 +620,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function playEffectAndSound() {
         const settings = db.settings;
-        // Sound
         if (settings.sound === 'bell') {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -665,7 +652,6 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch(e){}
         }
 
-        // Effect
         if (typeof confetti !== 'undefined') {
             if (settings.effect === 'confetti') {
                 confetti({ particleCount: 30, spread: 60, origin: { y: 0.6 } });
@@ -693,7 +679,6 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (modeName === 'endless') modeName = '間違えるまで';
         else if (modeName === 'timeattack') modeName = 'タイムアタック';
 
-        // Save history entry
         const historyEntry = {
             mode: modeName,
             modeCode: currentGame.mode,
@@ -722,7 +707,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         saveData();
 
-        // Show result view
         resModeEl.textContent = modeName;
         resScoreEl.textContent = `${currentGame.correctCount} / ${totalQ}`;
         resAccuracyEl.textContent = accuracy;
@@ -737,7 +721,6 @@ document.addEventListener('DOMContentLoaded', () => {
         verifyUserDB();
         const uData = getCurrentUserData();
 
-        // Totals
         let totalTimeSec = uData.history.reduce((acc, cur) => acc + (cur.timeSpent || 0), 0);
         let totalAns = uData.history.reduce((acc, cur) => acc + (cur.totalCount || 0), 0);
         
@@ -766,7 +749,6 @@ document.addEventListener('DOMContentLoaded', () => {
             calendarGridEl.appendChild(div);
         });
 
-        // Count plays per day string
         let playCountByDate = {};
         uData.history.forEach(h => {
             let dStr = new Date(h.timestamp).toDateString();
@@ -777,7 +759,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const firstDayIndex = new Date(year, month, 1).getDay();
         const lastDayDate = new Date(year, month + 1, 0).getDate();
 
-        // Blank cells before first day
         for (let i = 0; i < firstDayIndex; i++) {
             const div = document.createElement('div');
             calendarGridEl.appendChild(div);
@@ -800,7 +781,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const uData = getCurrentUserData();
         const ctx = document.getElementById('historyChart').getContext('2d');
         
-        // Calculate date range
         let now = new Date();
         now.setHours(23, 59, 59, 999);
         let spanDays = graphRangeMode === 'week' ? 7 : 30;
@@ -813,12 +793,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         graphDateRangeEl.textContent = `${formatDateShort(startDate)} - ${formatDateShort(endDate)}`;
 
-        // Aggregate data by date
         let dateMap = {};
         let dIter = new Date(startDate);
         let labels = [];
         let playCounts = [];
-        let accuracySums = [];
         let accuracyCounts = [];
 
         while (dIter <= endDate) {
@@ -898,9 +876,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderTARecords() {
         const uData = getCurrentUserData();
-        // Filter Time Attack records
         let taLogs = uData.history.filter(h => h.modeCode === 'timeattack');
-        // Sort by correctCount desc, accuracy desc, timeSpent asc
         taLogs.sort((a, b) => {
             if (b.correctCount !== a.correctCount) return b.correctCount - a.correctCount;
             if (b.accuracy !== a.accuracy) return b.accuracy - a.accuracy;
@@ -932,7 +908,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const uData = getCurrentUserData();
         historyLogListEl.innerHTML = '';
         
-        // Reverse chronological
         let sorted = [...uData.history].reverse();
         sorted.forEach(h => {
             let div = document.createElement('div');
@@ -965,7 +940,6 @@ document.addEventListener('DOMContentLoaded', () => {
         setSound.value = settings.sound;
         setEffect.value = settings.effect;
 
-        // User select dropdown
         setUserSelect.innerHTML = '';
         for (let uId in db.users) {
             let opt = document.createElement('option');
@@ -981,7 +955,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const rankingContainer = document.getElementById('ranking-container');
         rankingContainer.innerHTML = '';
 
-        // Collect stats across all users
         let usersPlayCount = [];
         let usersCorrectCount = [];
         let usersAccuracy = [];
@@ -1005,7 +978,6 @@ document.addEventListener('DOMContentLoaded', () => {
             usersAccuracy.push({ name: uName, val: accuracy, date: lastPlayDate });
             usersStreak.push({ name: uName, val: streak, date: lastPlayDate });
 
-            // TA best score
             let taLogs = uData.history.filter(h => h.modeCode === 'timeattack');
             if (taLogs.length > 0) {
                 taLogs.sort((a, b) => b.correctCount - a.correctCount || b.accuracy - a.accuracy);
@@ -1013,7 +985,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Sort helpers
         usersPlayCount.sort((a,b) => b.val - a.val);
         usersCorrectCount.sort((a,b) => b.val - a.val);
         usersAccuracy.sort((a,b) => b.val - a.val);
@@ -1067,11 +1038,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 let item = uData.kukuMatrix[key] || { correct: 0, total: 0 };
                 let acc = item.total > 0 ? Math.round((item.correct / item.total) * 100) : null;
 
-                let bg = '#cbd5e1'; // default gray
+                let bg = '#cbd5e1';
                 if (acc !== null) {
-                    if (acc >= 80) bg = '#22c55e'; // green
-                    else if (acc >= 50) bg = '#f59e0b'; // orange
-                    else bg = '#ef4444'; // red
+                    if (acc >= 80) bg = '#22c55e';
+                    else if (acc >= 50) bg = '#f59e0b';
+                    else bg = '#ef4444';
                 }
 
                 let cell = document.createElement('div');
