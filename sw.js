@@ -1,5 +1,6 @@
-const CACHE_NAME = 'kakezan-master-v2';
+const CACHE_NAME = 'kakezan-master-v3';
 const ASSETS = [
+    './',
     './index.html',
     './styles.css',
     './script.js',
